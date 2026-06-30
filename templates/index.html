@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Persian Vibe</title>
+
+<link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+
+<style>
+:root{
+    --bg:#000;
+    --panel:#1a1a1a;
+    --accent:rgb(124, 12, 159);
+    --text:#eee;
+    --glow: 0 0 15px #ffffff;
+    --stat-glow: 0 0 20px rgba(255,255,255,0.7);
+}
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:var(--bg);
+    color:var(--text);
+}
+
+/* LOADING */
+#loading{
+    position:fixed;
+    inset:0;
+    background:black;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+
+#loading img{
+    width:90px;
+    animation: intro 1.2s ease-in-out forwards;
+}
+
+@keyframes intro{
+    0%{transform:rotate(0deg) scale(1);opacity:1;}
+    60%{transform:rotate(180deg) scale(2.5);opacity:1;}
+    100%{transform:rotate(360deg) scale(8);opacity:0;filter:blur(10px);}
+}
+
+/* MAIN */
+#main{ display:none; }
+
+/* NAV */
+nav{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:18px;
+    padding:12px;
+    position:sticky;
+    top:0;
+    background:#000;
+    border-bottom:2px solid var(--accent);
+    z-index: 1000;
+}
+
+nav a, nav button{
+    color:var(--text);
+    text-decoration:none;
+    font-weight:bold;
+    padding:6px 10px;
+    border-radius:6px;
+    transition: all 0.3s ease;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+nav a:hover, nav button:hover{
+    background:var(--accent);
+    color:#000;
+    box-shadow: var(--glow);
+}
+
+/* MODALS */
+#donate-modal, #rules-modal{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 3000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content{
+    background: #111;
+    border: 2px solid var(--accent);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 460px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(124, 12, 159, 0.5);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.lang-switch{
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.lang-btn{
+    padding: 8px 18px;
+    background: #1f1f1f;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.lang-btn.active{
+    background: var(--accent);
+    color: #000;
+}
+
+/* DONATE STYLES */
+.donate-option{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    background:#1a1a1a;
+    border:1px solid var(--accent);
+    border-radius:10px;
+    padding:15px;
+    margin:10px 0;
+    cursor:pointer;
+}
+
+.crypto-row{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+}
+
+.crypto-btn{
+    width:90px;
+    padding:10px;
+    border:1px solid var(--accent);
+    border-radius:10px;
+    background:#1a1a1a;
+    cursor:pointer;
+}
+
+.crypto-btn img{
+    width:40px;
+    height:40px;
+    object-fit:contain;
+}
+
+.wallet-address{
+    background:#000;
+    border:1px solid var(--accent);
+    border-radius:8px;
+    padding:10px;
+    word-break:break-all;
+}
+
+/* HERO */
+.hero{
+    text-align:center;
+    padding:40px;
+    position: relative;
+    z-index: 1;
+}
+
+.play-btn{
+    background:var(--accent);
+    color: #fff;
+    border:none;
+    padding:12px 28px;
+    font-size: 1.1rem;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+    transition: all 0.3s ease;
+}
+
+.play-btn:hover{
+    box-shadow: var(--glow);
+    transform: scale(1.05);
+}
+
+.slider{
+    width:90%;
+    max-width:900px;
+    height:400px;
+    margin:20px auto;
+    overflow:hidden;
+    border-radius:15px;
+    border:2px solid var(--accent);
+    background:black;
+    position: relative;
+    z-index: 2;
+}
+
+.track{
+    display:flex;
+    height:100%;
+    transition:transform 0.6s ease;
+}
+
+.track img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    flex-shrink:0;
+}
+
+.section{
+    padding:40px;
+    max-width:900px;
+    margin:auto;
+    position: relative;
+    z-index: 1;
+}
+
+.card{
+    background:var(--panel);
+    padding:15px;
+    margin:10px 0;
+    border-radius:10px;
+    border:1px solid var(--accent);
+    transition: all 0.4s ease;
+}
+
+.card:hover{
+    transform: translateY(-5px);
+    box-shadow: var(--glow);
+    border-color: #fff;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:10px;
+}
+
+.stat{
+    background:var(--panel);
+    padding:15px;
+    border-radius:10px;
+    border:1px solid var(--accent);
+    text-align:center;
+    transition: all 0.3s ease;
+}
+
+.stat:hover{
+    box-shadow: var(--stat-glow);
+    transform: scale(1.05);
+}
+
+.stat h3{
+    margin:5px 0;
+    font-size:1.9rem;
+    color:#fff;
+    text-shadow: 0 0 10px var(--accent);
+}
+
+.leaderboard{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:15px;
+}
+
+.leader-entry{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:var(--panel);
+    padding:12px;
+    border-radius:10px;
+    border:1px solid var(--accent);
+}
+
+.leader-entry:hover{
+    box-shadow: var(--glow);
+}
+
+.rank{
+    font-size:1.8rem;
+    font-weight:bold;
+    color:var(--accent);
+    width:40px;
+}
+
+.progress-container{
+    background:var(--panel);
+    padding:20px;
+    border-radius:10px;
+    border:1px solid var(--accent);
+    margin:20px 0;
+}
+
+.progress-bar{
+    height:20px;
+    background:#333;
+    border-radius:9999px;
+    overflow:hidden;
+    position:relative;
+}
+
+.progress-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--accent), #ff00ff);
+    width:0%;
+    transition: width 2s ease;
+}
+
+.progress-label{
+    display:flex;
+    justify-content:space-between;
+    margin-top:8px;
+    font-size:0.9rem;
+}
+
+@media (max-width:600px){
+    nav{gap:10px; padding:10px;}
+}
+</style>
+</head>
+
+<body>
+
+<div id="loading">
+    <img src="{{ url_for('static', filename='images/roblox_white.png') }}">
+</div>
+
+<div id="main">
+
+<nav>
+    <a href="#home">Home</a>
+    <a href="#news">News</a>
+    <a href="#leaderboard">Leaderboard</a>
+    <button onclick="openDonateModal()">💰 Donate</button>
+    <a href="#contact">Contact</a>
+</nav>
+
+<section class="hero" id="home">
+    <h1>PV</h1>
+    <p>you wanna have some fun?</p>
+
+    <button class="play-btn" onclick="window.open('https://www.roblox.com/share?code=ad1681afa0cf8a47a0069ba30bd07988&type=ExperienceDetails&stamp=1781771839811','_blank')">
+        ▶ Play Now
+    </button>
+
+    <div class="slider">
+        <div class="track">
+            <img src="{{ url_for('static', filename='images/slide1.png') }}">
+            <img src="{{ url_for('static', filename='images/slide2.png') }}">
+        </div>
+    </div>
+</section>
+
+<section class="section" id="stats">
+    <h2>📊 Live Stats</h2>
+    <div class="stats">
+        <div class="stat">
+            <h3 id="visits">0</h3>
+            <p>Visits</p>
+        </div>
+        <div class="stat">
+            <h3 id="players">0</h3>
+            <p>Players</p>
+        </div>
+        <div class="stat">
+            <h3>V1.2</h3>
+            <p>Version</p>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="news">
+    <h2>📰 Latest News</h2>
+    <div class="card">
+        <h3>Major Update</h3>
+        <p>New maps, bosses, and rewards added.</p>
+    </div>
+</section>
+
+<section class="section" id="leaderboard">
+    <h2>🏆 Global Leaderboard</h2>
+    <div class="leaderboard">
+        <div class="leader-entry">
+            <span class="rank">#1</span>
+            <div>
+                <strong>WhoRad_PV</strong><br>
+                <small>Level 87 • 245K Points</small>
+            </div>
+        </div>
+        <div class="leader-entry">
+            <span class="rank">#2</span>
+            <div>
+                <strong>GBAMIDIG</strong><br>
+                <small>Level 82 • 198K Points</small>
+            </div>
+        </div>
+        <div class="leader-entry">
+            <span class="rank">#3</span>
+            <div>
+                <strong>SD_Persian</strong><br>
+                <small>Level 79 • 167K Points</small>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="daily-reward">
+    <h2>🎁 Daily Login Reward</h2>
+    <div class="card">
+        <p><strong>Login 20 days in a row</strong> = 1 Lottery Entry</p>
+        <p>The winner of the monthly lottery gets <strong>100 Robux</strong>!</p>
+        <small>Keep logging in every day to increase your chances.</small>
+    </div>
+</section>
+
+<section class="section" id="updates">
+    <h2>🚀 Next Update Progress</h2>
+    <div class="progress-container">
+        <div style="margin-bottom:12px;">
+            <strong>New Map Pack + Boss Fight</strong>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width:90%"></div>
+        </div>
+        <div class="progress-label">
+            <span>90% Complete</span>
+            <span>Expected: July 2026</span>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="team">
+    <h2>👥 Team</h2>
+    <div class="card">
+        <p>Owner: Who Rad</p>
+        <p>Developers: GBAMIDIG & SD</p>
+    </div>
+</section>
+
+<section class="section" id="contact">
+    <h2>📱 Connect With Us</h2>
+    <div class="card">
+        <p>Telegram:</p>
+        <a href="https://t.me/who_gngs" target="_blank">The persians🎧</a><br>
+        <a href="https://t.me/pv_poshtiban_bot" target="_blank">Support📩📞</a>
+    </div>
+
+    <div style="height:15px;"></div>
+
+    <div class="card">
+        <p>Discord:</p>
+        <a href="https://discord.gg/gDCjuAn4A" target="_blank" style="color:var(--accent);font-size:1rem;">
+            The persians🎧
+        </a>
+    </div>
+</section>
+
+<footer style="text-align:center;padding:30px;border-top:2px solid var(--accent);">
+    <span onclick="openRulesModal()" style="cursor:pointer; text-decoration:underline; margin-right:25px;">📜 Rules</span>
+    <span onclick="window.open('https://discord.gg/gDCjuAn4A', '_blank')" style="cursor:pointer; text-decoration:underline;">💬 Discord</span>
+</footer>
+
+</div>
+
+<!-- DONATE MODAL -->
+<div id="donate-modal">
+    <div class="modal-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h2>💰 Support Persian Vibe</h2>
+            <button onclick="closeDonateModal()" style="font-size:28px;background:none;border:none;color:white;cursor:pointer;">×</button>
+        </div>
+
+        <div onclick="selectTGStars()" class="donate-option">
+            <span style="font-size:28px;">⭐</span>
+            <div><strong>TG Stars</strong><br><small>Donate via Telegram Stars</small></div>
+        </div>
+
+        <div onclick="showCryptoOptions()" class="donate-option">
+            <span style="font-size:28px;">₿</span>
+            <div><strong>Cryptocurrency</strong><br><small>BTC • USDT • TRX</small></div>
+        </div>
+
+        <div id="crypto-options" style="display:none;margin-top:15px;">
+            <p>Select Coin:</p>
+            <div class="crypto-row">
+                <div class="crypto-btn" onclick="selectCrypto('BTC', 'UUUUUBTCUUUUU')">
+                    <img src="{{ url_for('static', filename='images/bitcoin-btc-logo.png') }}" alt="BTC">
+                    <small>BTC</small>
+                </div>
+                <div class="crypto-btn" onclick="selectCrypto('USDT', 'UUUUUUSDTUUUUU')">
+                    <img src="{{ url_for('static', filename='images/tether-usdt-logo.png') }}" alt="USDT">
+                    <small>USDT</small>
+                </div>
+                <div class="crypto-btn" onclick="selectCrypto('TRX', 'UUUUUUTRXUUUUU')">
+                    <img src="{{ url_for('static', filename='images/tron-trx-logo.png') }}" alt="TRX">
+                    <small>TRX</small>
+                </div>
+            </div>
+        </div>
+
+        <div id="wallet-display" style="display:none;margin-top:20px;">
+            <p><strong id="coin-name"></strong> Wallet Address:</p>
+            <div class="wallet-address" id="wallet-text"></div>
+            <div style="margin-top:15px;">
+                <button id="copy-btn" onclick="copyWalletAddress()" style="padding:10px 20px;margin-right:8px;">📋 Copy Address</button>
+                <button onclick="closeDonateModal()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RULES MODAL -->
+<div id="rules-modal">
+    <div class="modal-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h2>📜 Server Rules</h2>
+            <button onclick="closeRulesModal()" style="font-size:28px;background:none;border:none;color:white;cursor:pointer;">×</button>
+        </div>
+
+        <div class="lang-switch">
+            <button class="lang-btn active" onclick="switchLanguage('en')">Eng</button>
+            <button class="lang-btn" onclick="switchLanguage('fa')">فا</button>
+        </div>
+
+        <div id="rules-en">
+            <h3>🎮 Roblox Game Rules</h3>
+            <p><strong>⚠️ General Game Rules</strong></p>
+            <p>➤ Treat all players with respect 🤝</p>
+            <p>➤ Using hacks, cheats or exploits is strictly prohibited 🚫</p>
+            <p>➤ Spamming in game chat is not allowed 💬</p>
+            <p>➤ Insulting, threatening or harassing others will result in punishment ⛔</p>
+            <p>➤ Ruining other people's games or trolling is prohibited 😕</p>
+            <p>➤ Advertising other games or servers without permission is prohibited 📢</p>
+            <p>➤ If you find a bug, report it to the admin 🛠️</p>
+            <p>➤ Using inappropriate names or clothing is not allowed 👕</p>
+            <p>➤ Respect the instructions of admins and mods 👮</p>
+            <p>➤ Cheating or stealing items from others is prohibited 💰❌</p>
+
+            <br>
+            <h3>💬 Discord Server Rules</h3>
+            <p>➤ Respect all server members ❤️</p>
+            <p>➤ Posting offensive or inappropriate content is prohibited 🚫</p>
+            <p>➤ Do not spam, flood or mention without reason 🔔</p>
+            <p>➤ Advertising is prohibited without the permission of the admins 📢❌</p>
+            <p>➤ Using inappropriate profiles or names is not allowed 🖼️</p>
+            <p>➤ Do not publish your or others' personal information 🔒</p>
+            <p>➤ It is forbidden to create fights, political discussions or tension on the server ⚔️</p>
+            <p>➤ Use each channel only for its own topic 📂</p>
+            <p>➤ It is forbidden to abuse bots or disrupt the server 🤖</p>
+            <p>➤ If you have a problem, inform the management team 🛡️</p>
+
+            <p style="margin-top:25px; font-style:italic;">
+                ✨ Please follow the rules so that everyone can enjoy the game and the server ✨
+            </p>
+        </div>
+
+        <div id="rules-fa" style="display:none; text-align:right; direction:rtl;">
+            <h3>🎮 قوانین بازی Roblox</h3>
+            <p><strong>⚠️ قوانین عمومی بازی</strong></p>
+            <p>➤ با همه بازیکنان با احترام رفتار کنید 🤝</p>
+            <p>➤ استفاده از هک، چیت یا اکسپلویت کاملاً ممنوع است 🚫</p>
+            <p>➤ اسپم کردن در چت بازی مجاز نیست 💬</p>
+            <p>➤ توهین، تهدید یا آزار دیگران باعث مجازات می‌شود ⛔</p>
+            <p>➤ خراب کردن بازی دیگران یا ترول کردن ممنوع است 😕</p>
+            <p>➤ تبلیغ بازی‌ها یا سرورهای دیگر بدون اجازه ممنوع می‌باشد 📢</p>
+            <p>➤ اگر باگی پیدا کردید، آن را به ادمین گزارش دهید 🛠️</p>
+            <p>➤ استفاده از اسم یا لباس نامناسب مجاز نیست 👕</p>
+            <p>➤ به دستورات ادمین‌ها و مودها احترام بگذارید 👮</p>
+            <p>➤ کلاهبرداری یا دزدیدن آیتم از دیگران ممنوع است 💰❌</p>
+
+            <br>
+            <h3>💬 قوانین سرور Discord</h3>
+            <p>➤ به تمام اعضای سرور احترام بگذارید ❤️</p>
+            <p>➤ ارسال محتوای توهین‌آمیز یا نامناسب ممنوع است 🚫</p>
+            <p>➤ اسپم، فلود و منشن بی‌دلیل انجام ندهید 🔔</p>
+            <p>➤ تبلیغات بدون اجازه مدیران ممنوع می‌باشد 📢❌</p>
+            <p>➤ استفاده از پروفایل یا اسم نامناسب مجاز نیست 🖼️</p>
+            <p>➤ اطلاعات شخصی خود یا دیگران را منتشر نکنید 🔒</p>
+            <p>➤ ایجاد دعوا، بحث سیاسی یا تنش در سرور ممنوع است ⚔️</p>
+            <p>➤ از هر چنل فقط برای موضوع خودش استفاده کنید 📂</p>
+            <p>➤ سوءاستفاده از بات‌ها یا ایجاد اختلال در سرور ممنوع است 🤖</p>
+            <p>➤ در صورت داشتن مشکل، به تیم مدیریت اطلاع دهید 🛡️</p>
+
+            <p style="margin-top:25px; font-style:italic;">
+                ✨ لطفاً قوانین را رعایت کنید تا همه از بازی و سرور لذت ببرند ✨
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+/* LOADING */
+setTimeout(() => {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("main").style.display = "block";
+    animateStats();
+}, 900);
+
+/* DONATE MODAL */
+function openDonateModal() {
+    document.getElementById("donate-modal").style.display = "flex";
+    document.getElementById("crypto-options").style.display = "none";
+    document.getElementById("wallet-display").style.display = "none";
+}
+
+function closeDonateModal() {
+    document.getElementById("donate-modal").style.display = "none";
+}
+
+function selectTGStars() {
+    closeDonateModal();
+    if (confirm("Thank you!\n\nOpen Telegram Group to send Stars?")) {
+        window.open("https://t.me/who_gngs", "_blank");
+    }
+}
+
+function showCryptoOptions() {
+    document.getElementById("crypto-options").style.display = "block";
+}
+
+function selectCrypto(coin, address) {
+    document.getElementById("crypto-options").style.display = "none";
+    document.getElementById("coin-name").textContent = coin;
+    document.getElementById("wallet-text").textContent = address;
+    document.getElementById("wallet-display").style.display = "block";
+}
+
+function copyWalletAddress() {
+    const btn = document.getElementById("copy-btn");
+    const text = document.getElementById("wallet-text").textContent.trim();
+
+    navigator.clipboard.writeText(text).then(() => {
+        const originalText = btn.textContent;
+        btn.textContent = "✅ Copied!";
+        
+        setTimeout(() => {
+            btn.textContent = originalText;
+        }, 1000);
+    });
+}
+
+/* RULES MODAL */
+function openRulesModal() {
+    document.getElementById("rules-modal").style.display = "flex";
+    switchLanguage('en');
+}
+
+function closeRulesModal() {
+    document.getElementById("rules-modal").style.display = "none";
+}
+
+function switchLanguage(lang) {
+    document.getElementById("rules-en").style.display = lang === 'en' ? 'block' : 'none';
+    document.getElementById("rules-fa").style.display = lang === 'fa' ? 'block' : 'none';
+    
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', 
+            (lang === 'en' && btn.textContent === 'Eng') || 
+            (lang === 'fa' && btn.textContent === 'فا')
+        );
+    });
+}
+
+/* SMOOTH NAV */
+document.querySelectorAll('nav a').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(link.getAttribute('href'));
+        if (!target) return;
+        const startY = window.scrollY;
+        const endY = target.getBoundingClientRect().top + window.scrollY;
+        const distance = endY - startY;
+        const duration = 450;
+        let startTime = null;
+        function animate(time) {
+            if (!startTime) startTime = time;
+            const progress = Math.min((time - startTime) / duration, 1);
+            const ease = 1 - Math.pow(1 - progress, 3);
+            window.scrollTo(0, startY + distance * ease);
+            if (progress < 1) requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+    });
+});
+
+/* SLIDER */
+let i = 0;
+const track = document.querySelector(".track");
+setInterval(() => {
+    i = (i + 1) % 2;
+    track.style.transform = `translateX(-${i * 100}%)`;
+}, 2500);
+
+/* ANIMATED STATS */
+function animateValue(id, start, end, duration) {
+    const obj = document.getElementById(id);
+    if (!obj) return;
+    const range = end - start;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        obj.innerHTML = Math.floor(start + range * ease).toLocaleString() + (id === "visits" ? "+" : "");
+        if (progress < 1) requestAnimationFrame(step);
+        else obj.innerHTML = end.toLocaleString() + (id === "visits" ? "+" : "");
+    };
+    requestAnimationFrame(step);
+}
+
+function animateStats() {
+    animateValue("visits", 80000, 120000, 1800);
+    animateValue("players", 1200, 2500, 1600);
+}
+</script>
+
+</body>
+</html>
